@@ -9,38 +9,26 @@ const BOT_TOKEN = "8504673170:AAFlRCSa6AAbPO8AcGKw8iDUgLXGlSoqPnM";
 
 app.get("/callback", (req, res) => {
     const data = { ...req.query };
-
     const hash = data.hash;
     delete data.hash;
 
-    const secret = crypto
-        .createHash("sha256")
-        .update(BOT_TOKEN)
-        .digest();
-
+    const secret = crypto.createHash("sha256").update(BOT_TOKEN).digest();
     const checkString = Object.keys(data)
         .sort()
-        .map((k) => `${k}=${data[k]}`)
+        .map(k => `${k}=${data[k]}`)
         .join("\n");
-
-    const hmac = crypto
-        .createHmac("sha256", secret)
-        .update(checkString)
-        .digest("hex");
+    const hmac = crypto.createHmac("sha256", secret).update(checkString).digest("hex");
 
     if (hmac !== hash) {
-        return res.status(401).json({ error: "Invalid Telegram login" });
+        return res.status(401).send("Invalid Telegram login");
     }
 
-    return res.json({
-        id: data.id,
-        first_name: data.first_name,
-        last_name: data.last_name,
-        username: data.username,
-        photo_url: data.photo_url,
-        auth_date: data.auth_date,
-    });
+    const userData = encodeURIComponent(JSON.stringify(data));
+
+    // Redirect to HTML page that triggers app scheme
+    res.redirect(`https://telegram.rahimtullahdryfish.com?data=${userData}`);
 });
+
 
 app.listen(3000, () => {
     console.log("Telegram OAuth server running on port 3000");
