@@ -1,33 +1,28 @@
 import express from "express";
-import crypto from "crypto";
 import cors from "cors";
 
 const app = express();
 app.use(cors());
 
-const BOT_TOKEN = "8504673170:AAFlRCSa6AAbPO8AcGKw8iDUgLXGlSoqPnM";
-
+// Telegram OAuth callback route
 app.get("/callback", (req, res) => {
+    // Take all query parameters sent by Telegram
     const data = { ...req.query };
-    const hash = data.hash;
-    delete data.hash;
 
-    const secret = crypto.createHash("sha256").update(BOT_TOKEN).digest();
-    const checkString = Object.keys(data)
-        .sort()
-        .map((k) => `${k}=${data[k]}`)
-        .join("\n");
-    const hmac = crypto.createHmac("sha256", secret).update(checkString).digest("hex");
-
-    // if (hmac !== hash) {
-    //     return res.status(401).send("Invalid Telegram login");
-    // }
-
-    // Return JSON wrapped in <pre> for WebView
-    return res.send(`<pre>${JSON.stringify(data)}</pre>`);
+    // Return all data directly, skip hash verification
+    return res.json({
+        id: data.id || null,
+        first_name: data.first_name || null,
+        last_name: data.last_name || null,
+        username: data.username || null,
+        photo_url: data.photo_url || null,
+        auth_date: data.auth_date || null,
+        ...data, // include any extra parameters Telegram sent
+    });
 });
 
-
-app.listen(3000, () => {
-    console.log("new hosted 3000");
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`✅ Telegram OAuth server running on port ${PORT} (no hash verification)`);
 });
