@@ -15,25 +15,17 @@ app.get("/callback", (req, res) => {
     const secret = crypto.createHash("sha256").update(BOT_TOKEN).digest();
     const checkString = Object.keys(data)
         .sort()
-        .map(k => `${k}=${data[k]}`)
+        .map((k) => `${k}=${data[k]}`)
         .join("\n");
     const hmac = crypto.createHmac("sha256", secret).update(checkString).digest("hex");
 
     if (hmac !== hash) {
-        return res.status(401).json({ error: "Invalid Telegram login" });
+        return res.status(401).send("Invalid Telegram login");
     }
-    console.log(`this is my Name ${data.first_name}`);
-    return res.json({
-        id: data.id,
-        first_name: data.first_name,
-        last_name: data.last_name,
-        username: data.username,
-        photo_url: data.photo_url,
-        auth_date: data.auth_date,
-    });
 
+    // Return JSON wrapped in <pre> for WebView
+    return res.send(`<pre>${JSON.stringify(data)}</pre>`);
 });
-
 
 
 app.listen(3000, () => {
