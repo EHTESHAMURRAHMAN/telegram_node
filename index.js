@@ -20,14 +20,20 @@ app.get("/callback", (req, res) => {
     const hmac = crypto.createHmac("sha256", secret).update(checkString).digest("hex");
 
     if (hmac !== hash) {
-        return res.status(401).send("Invalid Telegram login");
+        return res.status(401).json({ error: "Invalid Telegram login" });
     }
+    console.log(`this is my Name ${data.first_name}`);
+    return res.json({
+        id: data.id,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        username: data.username,
+        photo_url: data.photo_url,
+        auth_date: data.auth_date,
+    });
 
-    const userData = encodeURIComponent(JSON.stringify(data));
-
-    // Redirect to HTML page that triggers app scheme
-    res.redirect(`https://telegram.rahimtullahdryfish.com?data=${userData}`);
 });
+
 
 
 app.listen(3000, () => {
